@@ -1,0 +1,3 @@
+module Export
+import advertiseMyself, getMembers from "hello-registry.aqua"
+export advertiseMyself, getMembers
