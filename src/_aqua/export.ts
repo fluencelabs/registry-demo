@@ -19,18 +19,20 @@ import {
 // Functions
  
 
-export function getMembers(
+export function joinRoom(
+    peerId: string,
     label: string,
     config?: {ttl?: number}
-): Promise<string[]>;
+): Promise<string>;
 
-export function getMembers(
+export function joinRoom(
     peer: FluencePeer,
+    peerId: string,
     label: string,
     config?: {ttl?: number}
-): Promise<string[]>;
+): Promise<string>;
 
-export function getMembers(...args: any) {
+export function joinRoom(...args: any) {
 
     let script = `
                     (xor
@@ -38,12 +40,12 @@ export function getMembers(...args: any) {
                       (seq
                        (seq
                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "label") [] label)
+                        (call %init_peer_id% ("getDataSrv" "peerId") [] peerId)
                        )
-                       (call %init_peer_id% ("op" "array") ["1" "2" "3" "4"] res)
+                       (call %init_peer_id% ("getDataSrv" "label") [] label)
                       )
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [res])
+                       (call %init_peer_id% ("callbackSrv" "response") ["ok"])
                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                       )
                      )
@@ -53,11 +55,17 @@ export function getMembers(...args: any) {
     return callFunction(
         args,
         {
-    "functionName" : "getMembers",
+    "functionName" : "joinRoom",
     "returnType" : {
         "tag" : "primitive"
     },
     "argDefs" : [
+        {
+            "name" : "peerId",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
         {
             "name" : "label",
             "argType" : {
@@ -81,18 +89,18 @@ export function getMembers(...args: any) {
 
  
 
-export function advertiseMyself(
+export function createRoom(
     label: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function advertiseMyself(
+export function createRoom(
     peer: FluencePeer,
     label: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function advertiseMyself(...args: any) {
+export function createRoom(...args: any) {
 
     let script = `
                     (xor
@@ -152,11 +160,84 @@ export function advertiseMyself(...args: any) {
     return callFunction(
         args,
         {
-    "functionName" : "advertiseMyself",
+    "functionName" : "createRoom",
     "returnType" : {
         "tag" : "primitive"
     },
     "argDefs" : [
+        {
+            "name" : "label",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        }
+    ],
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+
+export function getMembers(
+    peerId: string,
+    label: string,
+    config?: {ttl?: number}
+): Promise<string[]>;
+
+export function getMembers(
+    peer: FluencePeer,
+    peerId: string,
+    label: string,
+    config?: {ttl?: number}
+): Promise<string[]>;
+
+export function getMembers(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                         (call %init_peer_id% ("getDataSrv" "peerId") [] peerId)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "label") [] label)
+                       )
+                       (call %init_peer_id% ("op" "array") ["1" "2" "3" "4"] res)
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [res])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                    )
+    `
+    return callFunction(
+        args,
+        {
+    "functionName" : "getMembers",
+    "returnType" : {
+        "tag" : "primitive"
+    },
+    "argDefs" : [
+        {
+            "name" : "peerId",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
         {
             "name" : "label",
             "argType" : {

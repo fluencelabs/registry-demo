@@ -15,10 +15,14 @@
                 <button id="start">start room</button>
             </div>
             <div>
+                <button id="join" class="hidden">join room</button>
+            </div>
+            <div id="join-link-wrapper" class="hidden">
+                <div>Join link: <span id="join-link"></span></div>
                 <canvas id="qrcode" />
             </div>
 
-            <div>
+            <div id="room-list-wrapper" class="hidden">
                 <span>users in room</span>
                 <ul id="room-list"></ul>
             </div>

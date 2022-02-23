@@ -1,4 +1,4 @@
-module HelloRegistry declares advertiseMyself, getMembers
+module HelloRegistry declares createRoom, joinRoom, getMembers
 
 import initTopicAndSubscribe, findSubscribers from "@fluencelabs/aqua-dht/pubsub.aqua"
 import "@fluencelabs/aqua-dht/dht.aqua"
@@ -6,31 +6,29 @@ import "@fluencelabs/aqua-lib/builtin.aqua"
 
 alias PeerId: string
 
-service MessagingService("messaging"):
-    receiveMessage(msg: string)
-
-func advertiseMyself(label: string) -> string:
+func createRoom(label: string) -> string:
     relay_id: ?string
     relay_id <<- HOST_PEER_ID
     initTopicAndSubscribe(label, "myValue", relay_id, nil)
     <- "ok"
 
-func getMembers(label: string) -> []string:
+func joinRoom(peerId: PeerId, label: string) -> string:
+    -- add  
+    -- INIT_PEER_ID, HOST_PEER_ID to dht record of peerId, label
+    <- "ok"
+
+func getMembers(peerId: PeerId, label: string) -> []string:
+    -- get values from dht record of peerId, label
+    -- iterate these values, check for connection
+    -- return only connected.
+    -- something like this:
+    --
+    -- stream: *string
+    -- for r <- records par:
+    --     on r.relay:
+    --         if Peer.is_connected(r.peer):
+    --             <<- record
+    -- <- stream
+
     res <- Op.array("1", "2", "3", "4")
     <- res
-
-func callSubscriber(sub: Record, msg: string):
-    on sub.peer_id via sub.relay_id:
-        MessagingService.receiveMessage(msg)
-
-func sendMyself(hostPeerId: string, relayPeerId: string, msg: string) -> string:
-    on hostPeerId via relayPeerId:
-        MessagingService.receiveMessage(msg)
-    <- "ok"
-
-func sendEveryone(topic: string, msg: string) -> string:
-    on HOST_PEER_ID:
-        subscribers <- findSubscribers(topic)
-        for sub <- subscribers par:
-            callSubscriber(sub, msg)
-    <- "ok"
