@@ -10,6 +10,7 @@ import { createMyRoute, discoverAndNotify, registerDiscoveryService, DiscoverySe
 const label = 'registry-demo';
 
 let selfDiscoveryRouteId: string;
+
 interface DiscoveredUser {
     route: string;
     userName: string;
@@ -80,38 +81,28 @@ async function main() {
     const selfPeerId = Fluence.getStatus().peerId!;
     setText('peerid', selfPeerId);
 
-    const params = new URLSearchParams(window.location.search);
-    const joinParam = params.get('join');
-
-    const myName = getValue('name');
-    let res = await createMyRoute(label, myName);
-    // res = await
-
     hide('loading');
     show('app');
 }
 
 onClick('go', async () => {
     disable('go');
+
     const myName = getValue('name');
+    const params = new URLSearchParams(window.location.search);
+    const joinParam = params.get('join');
+
+    if (joinParam) {
+        const [routeId, knownUsers] = await discoverAndNotify(joinParam, label, myName);
+        discoveryServiceInstance.setInitialList(knownUsers);
+        selfDiscoveryRouteId;
+    } else {
+        selfDiscoveryRouteId = await createMyRoute(label, myName);
+    }
+
     const createdRoute = await createMyRoute(label, myName);
     selfDiscoveryRouteId = createdRoute;
-    let knownUsers = await notifySelfDiscovered({
-        userName: myName,
-        route: selfDiscoveryRouteId,
-    });
 
-    // @ts-ignore
-    knownUsers = [
-        {
-            route: 'test1',
-            userName: 'test1',
-        },
-        {
-            route: 'test2',
-            userName: 'test2',
-        },
-    ];
     // @ts-ignore
     discoveryServiceInstance.setInitialList(knownUsers);
 

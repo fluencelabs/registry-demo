@@ -7,3 +7,5 @@ export declare function onClick(id: string, handler: (el: MouseEvent) => void): 
 export declare function setText(id: string, text: string): void;
 export declare function getValue(id: string): any;
 export declare function createQrCode(targetId: string, link: string, opts: QRCode.QRCodeRenderersOptions): Promise<void>;
+export declare function disable(id: string): void;
+export declare function enable(id: string): void;

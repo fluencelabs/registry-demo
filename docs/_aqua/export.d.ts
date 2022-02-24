@@ -9,10 +9,7 @@
 import { FluencePeer } from '@fluencelabs/fluence';
 import { CallParams } from '@fluencelabs/fluence/dist/internal/compilerSupport/v2';
 export interface DiscoveryServiceDef {
-    notify_discovered: (discoveredUser: {
-        route: string;
-        userName: string;
-    }, callParams: CallParams<'discoveredUser'>) => {
+    notify_discovered: (route_id: string, userName: string, callParams: CallParams<'route_id' | 'userName'>) => {
         route: string;
         userName: string;
     }[] | Promise<{
@@ -24,19 +21,19 @@ export declare function registerDiscoveryService(service: DiscoveryServiceDef): 
 export declare function registerDiscoveryService(serviceId: string, service: DiscoveryServiceDef): void;
 export declare function registerDiscoveryService(peer: FluencePeer, service: DiscoveryServiceDef): void;
 export declare function registerDiscoveryService(peer: FluencePeer, serviceId: string, service: DiscoveryServiceDef): void;
-export declare type NotifySelfDiscoveredArgSelf = {
+export declare function createMyRoute(label: string, userName: string, config?: {
+    ttl?: number;
+}): Promise<string>;
+export declare function createMyRoute(peer: FluencePeer, label: string, userName: string, config?: {
+    ttl?: number;
+}): Promise<string>;
+export declare type DiscoverAndNotifyResult = [string, {
     route: string;
     userName: string;
-};
-export declare function notifySelfDiscovered(self: NotifySelfDiscoveredArgSelf, config?: {
+}[]];
+export declare function discoverAndNotify(join_route_id: string, label: string, userName: string, config?: {
     ttl?: number;
-}): Promise<string>;
-export declare function notifySelfDiscovered(peer: FluencePeer, self: NotifySelfDiscoveredArgSelf, config?: {
+}): Promise<DiscoverAndNotifyResult>;
+export declare function discoverAndNotify(peer: FluencePeer, join_route_id: string, label: string, userName: string, config?: {
     ttl?: number;
-}): Promise<string>;
-export declare function createRoute(label: string, value: string, config?: {
-    ttl?: number;
-}): Promise<string>;
-export declare function createRoute(peer: FluencePeer, label: string, value: string, config?: {
-    ttl?: number;
-}): Promise<string>;
+}): Promise<DiscoverAndNotifyResult>;
