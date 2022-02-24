@@ -49,7 +49,7 @@ export function enable(id: string) {
 }
 
 export function link(id: string): string {
-    return window.location.origin + '?join=' + id;
+    return window.location.hostname + '?join=' + id;
 }
 
 interface DiscoveredUser {
