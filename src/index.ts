@@ -74,16 +74,10 @@ onClick('go', async () => {
     if (joinParam) {
         const [routeId, knownUsers] = await discoverAndNotify(joinParam, label, myName);
         discoveryServiceInstance.setInitialList(knownUsers);
-        selfDiscoveryRouteId;
+        selfDiscoveryRouteId = routeId;
     } else {
         selfDiscoveryRouteId = await createMyRoute(label, myName);
     }
-
-    const createdRoute = await createMyRoute(label, myName);
-    selfDiscoveryRouteId = createdRoute;
-
-    // @ts-ignore
-    discoveryServiceInstance.setInitialList(knownUsers);
 
     setText('join-link', link(selfDiscoveryRouteId));
     await createQrCode('qrcode', link(selfDiscoveryRouteId), { width: 640 });
