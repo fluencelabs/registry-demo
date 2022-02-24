@@ -112,20 +112,20 @@ export function notifySelfDiscovered(...args: any) {
 
  
 
-export function createRoute(
+export function createMyRoute(
     label: string,
     value: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function createRoute(
+export function createMyRoute(
     peer: FluencePeer,
     label: string,
     value: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function createRoute(...args: any) {
+export function createMyRoute(...args: any) {
 
     let script = `
                     (xor
@@ -148,7 +148,7 @@ export function createRoute(...args: any) {
     return callFunction(
         args,
         {
-    "functionName" : "createRoute",
+    "functionName" : "createMyRoute",
     "returnType" : {
         "tag" : "primitive"
     },
