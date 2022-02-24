@@ -6,16 +6,17 @@
     </head>
     <body>
         <div id="app" class="hidden">
+            <h1></h1>
             <div>your peer id: <span id="peerid"></span></div>
             <div>
                 <label>your name</label>
                 <input type="text" id="name" value="my name" />
             </div>
-            <div>
-                <button id="start">start room</button>
+            <div id="ref-route-id-wrapper" class="hidden">
+                reference route id: <span id="ref-route-id">route id here</span>
             </div>
             <div>
-                <button id="join" class="hidden">join room</button>
+                <button id="go">go!</button>
             </div>
             <div id="join-link-wrapper" class="hidden">
                 <div>Join link: <span id="join-link"></span></div>
@@ -23,7 +24,7 @@
             </div>
 
             <div id="user-list-wrapper" class="hidden">
-                <span>users in room</span>
+                <h1>users in room</h1>
                 <ul id="user-list"></ul>
             </div>
         </div>

@@ -1,11 +1,11 @@
 import './index.css';
 
-import { Fluence } from '@fluencelabs/fluence';
+import { CallParams, Fluence } from '@fluencelabs/fluence';
 import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import avmRunner from './avmRunner';
 import { createQrCode, disable, getValue, hide, onClick, setText, show } from './util';
 
-import { createMyRoute, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
+import { createMyRoute, discoverAndNotify, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
 
 const label = 'registry-demo';
 
@@ -14,12 +14,16 @@ interface DiscoveredUser {
     route: string;
     userName: string;
 }
+
 class DiscoveryService implements DiscoveryServiceDef {
     private _discoveredUsers: DiscoveredUser[] = [];
 
-    notify_discovered(user: DiscoveredUser): DiscoveredUser[] {
-        if (this._discoveredUsers.every((x) => x.route !== user.route)) {
-            this._discoveredUsers.push(user);
+    notify_discovered(route_id: string, userName: string): DiscoveredUser[] {
+        if (this._discoveredUsers.every((x) => x.route !== route_id)) {
+            this._discoveredUsers.push({
+                userName: userName,
+                route: route_id,
+            });
 
             if (this.onUpdated) {
                 this.onUpdated(this._discoveredUsers);
@@ -46,9 +50,9 @@ discoveryServiceInstance.onUpdated = async (users) => {
     const promises = users.map(async (x) => {
         const html =
             // force new line
-            `<div>
-                <div>${x.userName}</div>
-                <canvas id="${x.route}" />
+            `<div class="user">
+                <div class="user__name">${x.userName}</div>
+                <canvas class="user__canvas" id="${x.route}" />
 			</div>`;
         const li = document.createElement('li');
         li.innerHTML = html;
@@ -87,8 +91,8 @@ async function main() {
     show('app');
 }
 
-onClick('start', async () => {
-    disable('start');
+onClick('go', async () => {
+    disable('go');
     const myName = getValue('name');
     const createdRoute = await createMyRoute(label, myName);
     selfDiscoveryRouteId = createdRoute;
@@ -120,25 +124,3 @@ onClick('start', async () => {
 function link(id: string): string {
     return window.location.origin + '?join=' + id;
 }
-
-onClick('join', async () => {
-    const myName = getValue('name');
-    // const res = await joinRoom(roomPeerId, label);
-    // if(res is not fine)
-    //    throw
-
-    show('room-list-wrapper');
-});
-
-// async function loadMemberList() {
-//     const members = await getMembers(roomPeerId, label);
-//     const liElems = members.map((x) => {
-//         const el = document.createElement('li');
-//         el.textContent = x;
-//         return el;
-//     });
-//     const roomElem = document.getElementById('room-list');
-//     roomElem?.replaceChildren(...liElems);
-// }
-
-main();

@@ -1,4 +1,4 @@
-module HelloRegistry declares createMyRoute, DiscoveryService
+module HelloRegistry declares createMyRoute, DiscoveryService, discoverAndNotify
 
 import "@fluencelabs/registry/routing.aqua"
 import "@fluencelabs/aqua-lib/builtin.aqua"

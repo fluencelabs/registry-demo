@@ -22,3 +22,5 @@ jspm_packages/
 
 public/*.wasm
 public/runnerScript.web.js
+
+src/_aqua
