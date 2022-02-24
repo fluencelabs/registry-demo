@@ -9,3 +9,10 @@ export declare function getValue(id: string): any;
 export declare function createQrCode(targetId: string, link: string, opts: QRCode.QRCodeRenderersOptions): Promise<void>;
 export declare function disable(id: string): void;
 export declare function enable(id: string): void;
+export declare function link(id: string): string;
+interface DiscoveredUser {
+    route: string;
+    userName: string;
+}
+export declare function updateUserList(users: DiscoveredUser[]): Promise<void>;
+export {};

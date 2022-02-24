@@ -3,13 +3,14 @@ import './index.css';
 import { CallParams, Fluence } from '@fluencelabs/fluence';
 import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import avmRunner from './avmRunner';
-import { createQrCode, disable, getValue, hide, onClick, setText, show } from './util';
+import { createQrCode, disable, getValue, hide, link, onClick, setText, show, updateUserList } from './util';
 
 import { createMyRoute, discoverAndNotify, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
 
 const label = 'registry-demo';
 
 let selfDiscoveryRouteId: string;
+let joinRouteId: string | null;
 
 interface DiscoveredUser {
     route: string;
@@ -60,6 +61,14 @@ async function main() {
     const selfPeerId = Fluence.getStatus().peerId!;
     setText('peerid', selfPeerId);
 
+    const params = new URLSearchParams(window.location.search);
+    joinRouteId = params.get('join');
+
+    if (joinRouteId) {
+        setText('ref-route-id', joinRouteId);
+        show('ref-route-id-wrapper');
+    }
+
     hide('loading');
     show('app');
 }
@@ -68,11 +77,9 @@ onClick('go', async () => {
     disable('go');
 
     const myName = getValue('name');
-    const params = new URLSearchParams(window.location.search);
-    const joinParam = params.get('join');
 
-    if (joinParam) {
-        const [routeId, knownUsers] = await discoverAndNotify(joinParam, label, myName);
+    if (joinRouteId) {
+        const [routeId, knownUsers] = await discoverAndNotify(joinRouteId, label, myName);
         discoveryServiceInstance.setInitialList(knownUsers);
         selfDiscoveryRouteId = routeId;
     } else {
@@ -80,36 +87,11 @@ onClick('go', async () => {
     }
 
     setText('join-link', link(selfDiscoveryRouteId));
-    await createQrCode('qrcode', link(selfDiscoveryRouteId), { width: 640 });
+    await createQrCode('qrcode', link(selfDiscoveryRouteId), { width: 480 });
 
+    hide('ref-route-id-wrapper');
+    show('join-link-wrapper');
     show('user-list-wrapper');
 });
-
-function link(id: string): string {
-    return window.location.origin + '?join=' + id;
-}
-
-async function updateUserList(users) {
-    const promises = users.map(async (x) => {
-        const html =
-            // force new line
-            `<div class="user">
-                <div class="user__name">${x.userName}</div>
-                <canvas class="user__canvas" id="${x.route}" />
-			</div>`;
-        const li = document.createElement('li');
-        li.innerHTML = html;
-        return li;
-    });
-
-    const lis = await Promise.all(promises);
-
-    const ul = document.getElementById('user-list')!;
-    ul?.replaceChildren(...lis);
-
-    for (let x of users) {
-        createQrCode(x.route, link(x.route), {});
-    }
-}
 
 main();

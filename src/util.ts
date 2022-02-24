@@ -47,3 +47,35 @@ export function enable(id: string) {
     const el = document.getElementById(id)!;
     el.removeAttribute('disabled');
 }
+
+export function link(id: string): string {
+    return window.location.origin + '?join=' + id;
+}
+
+interface DiscoveredUser {
+    route: string;
+    userName: string;
+}
+
+export async function updateUserList(users: DiscoveredUser[]) {
+    const promises = users.map(async (x) => {
+        const html =
+            // force new line
+            `<div class="user">
+                <div class="user__name">${x.userName}</div>
+                <canvas class="user__canvas" id="${x.route}" />
+			</div>`;
+        const li = document.createElement('li');
+        li.innerHTML = html;
+        return li;
+    });
+
+    const lis = await Promise.all(promises);
+
+    const ul = document.getElementById('user-list')!;
+    ul?.replaceChildren(...lis);
+
+    for (let x of users) {
+        createQrCode(x.route, link(x.route), {});
+    }
+}
