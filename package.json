@@ -29,7 +29,7 @@
     },
     "devDependencies": {
         "@fluencelabs/aqua": "^0.6.1-279",
-        "@fluencelabs/aqua-dht": "^0.2.5",
+        "@fluencelabs/registry": "^0.3.1",
         "@fluencelabs/aqua-lib": "^0.4.0",
         "@fluencelabs/marine-js": "^0.1.0",
         "@types/qrcode": "^1.4.2",

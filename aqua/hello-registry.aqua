@@ -1,7 +1,6 @@
 module HelloRegistry declares createRoute, notifySelfDiscovered, DiscoveryService
 
-import initTopicAndSubscribe, findSubscribers from "@fluencelabs/aqua-dht/pubsub.aqua"
-import "@fluencelabs/aqua-dht/dht.aqua"
+import "@fluencelabs/registry/routing.aqua"
 import "@fluencelabs/aqua-lib/builtin.aqua"
 
 alias PeerId: string
@@ -14,7 +13,7 @@ data DiscoveredUser:
 service DiscoveryService("discoveryService"):
     notify_discovered(discoveredUser: DiscoveredUser) -> []DiscoveredUser
 
-func createRoute(label: string, value: string) -> string:
+func createMyRoute(label: string, value: string) -> string:
     -- res <- createRouteAndJoin(label, value, HOST_PEER_ID, null);
     <- "route id"
 
