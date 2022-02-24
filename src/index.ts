@@ -2,50 +2,14 @@ import './index.css';
 
 import { CallParams, Fluence } from '@fluencelabs/fluence';
 import { krasnodar } from '@fluencelabs/fluence-network-environment';
-import QRCode from 'qrcode';
+import avmRunner from './avmRunner';
+import { createQrCode, getValue, hide, onClick, setText, show } from './util';
+
 import { createRoute, notifySelfDiscovered, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
 
 const interval = 3000;
 
 const label = 'registry-demo';
-
-function addClass(id: string, className: string) {
-    const el = document.getElementById(id)!;
-    el.classList.add(className);
-}
-
-function removeClass(id: string, className: string) {
-    const el = document.getElementById(id)!;
-    el.classList.remove(className);
-}
-
-function hide(id: string) {
-    addClass(id, 'hidden');
-}
-
-function show(id: string) {
-    removeClass(id, 'hidden');
-}
-
-function onClick(id: string, handler: (el: MouseEvent) => void) {
-    const el = document.getElementById(id)!;
-    el.onclick = handler;
-}
-
-function setText(id: string, text: string) {
-    const el = document.getElementById(id)!;
-    el.textContent = text;
-}
-
-function getValue(id: string) {
-    const el: any = document.getElementById(id)!;
-    return el.value;
-}
-
-async function createQrCode(targetId: string, link: string, opts: QRCode.QRCodeRenderersOptions) {
-    const el = document.getElementById(targetId)!;
-    await QRCode.toCanvas(el, link, opts);
-}
 
 let selfDiscoveryRouteId: string;
 
@@ -73,6 +37,7 @@ const discoveryServiceInstance = new DiscoveryService();
 
 async function main() {
     await Fluence.start({
+        avmRunner: avmRunner,
         connectTo: krasnodar[4],
     });
 
