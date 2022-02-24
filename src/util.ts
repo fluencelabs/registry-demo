@@ -49,7 +49,7 @@ export function enable(id: string) {
 }
 
 export function link(id: string): string {
-    return window.location.hostname + '?join=' + id;
+    return 'https://fluence.one/registry-demo/?join=' + id;
 }
 
 interface DiscoveredUser {
