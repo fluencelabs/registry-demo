@@ -16,33 +16,62 @@ import {
 
 // Services
 
+export interface DiscoveryServiceDef {
+    notify_discovered: (discoveredUser: { route: string; userName: string; }, callParams: CallParams<'discoveredUser'>) => { route: string; userName: string; }[] | Promise<{ route: string; userName: string; }[]>;
+}
+export function registerDiscoveryService(service: DiscoveryServiceDef): void;
+export function registerDiscoveryService(serviceId: string, service: DiscoveryServiceDef): void;
+export function registerDiscoveryService(peer: FluencePeer, service: DiscoveryServiceDef): void;
+export function registerDiscoveryService(peer: FluencePeer, serviceId: string, service: DiscoveryServiceDef): void;
+       
+
+export function registerDiscoveryService(...args: any) {
+    registerService(
+        args,
+        {
+    "defaultServiceId" : "discoveryService",
+    "functions" : [
+        {
+            "functionName" : "notify_discovered",
+            "argDefs" : [
+                {
+                    "name" : "discoveredUser",
+                    "argType" : {
+                        "tag" : "primitive"
+                    }
+                }
+            ],
+            "returnType" : {
+                "tag" : "primitive"
+            }
+        }
+    ]
+}
+    );
+}
+      
 // Functions
- 
+export type NotifySelfDiscoveredArgSelf = { route: string; userName: string; } 
 
-export function joinRoom(
-    peerId: string,
-    label: string,
+export function notifySelfDiscovered(
+    self: NotifySelfDiscoveredArgSelf,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function joinRoom(
+export function notifySelfDiscovered(
     peer: FluencePeer,
-    peerId: string,
-    label: string,
+    self: NotifySelfDiscoveredArgSelf,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function joinRoom(...args: any) {
+export function notifySelfDiscovered(...args: any) {
 
     let script = `
                     (xor
                      (seq
                       (seq
-                       (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "peerId") [] peerId)
-                       )
-                       (call %init_peer_id% ("getDataSrv" "label") [] label)
+                       (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                       (call %init_peer_id% ("getDataSrv" "self") [] self)
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") ["ok"])
@@ -55,19 +84,13 @@ export function joinRoom(...args: any) {
     return callFunction(
         args,
         {
-    "functionName" : "joinRoom",
+    "functionName" : "notifySelfDiscovered",
     "returnType" : {
         "tag" : "primitive"
     },
     "argDefs" : [
         {
-            "name" : "peerId",
-            "argType" : {
-                "tag" : "primitive"
-            }
-        },
-        {
-            "name" : "label",
+            "name" : "self",
             "argType" : {
                 "tag" : "primitive"
             }
@@ -89,18 +112,20 @@ export function joinRoom(...args: any) {
 
  
 
-export function createRoom(
+export function createRoute(
     label: string,
+    value: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function createRoom(
+export function createRoute(
     peer: FluencePeer,
     label: string,
+    value: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
-export function createRoom(...args: any) {
+export function createRoute(...args: any) {
 
     let script = `
                     (xor
@@ -110,114 +135,10 @@ export function createRoom(...args: any) {
                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
                         (call %init_peer_id% ("getDataSrv" "label") [] label)
                        )
-                       (new $relay_id
-                        (seq
-                         (ap -relay- $relay_id)
-                         (xor
-                          (seq
-                           (seq
-                            (call -relay- ("op" "string_to_b58") [label] k)
-                            (call -relay- ("kad" "neighborhood") [k [] []] nodes)
-                           )
-                           (par
-                            (fold nodes n
-                             (par
-                              (xor
-                               (xor
-                                (seq
-                                 (seq
-                                  (call n ("peer" "timestamp_sec") [] t)
-                                  (call n ("aqua-dht" "register_key") [label t false 0])
-                                 )
-                                 (call n ("aqua-dht" "put_value") [label "myValue" t $relay_id [] 0])
-                                )
-                                (null)
-                               )
-                               (seq
-                                (call -relay- ("op" "noop") [])
-                                (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                               )
-                              )
-                              (next n)
-                             )
-                            )
-                            (null)
-                           )
-                          )
-                          (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
-                         )
-                        )
-                       )
+                       (call %init_peer_id% ("getDataSrv" "value") [] value)
                       )
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") ["ok"])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
-                      )
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 4])
-                    )
-    `
-    return callFunction(
-        args,
-        {
-    "functionName" : "createRoom",
-    "returnType" : {
-        "tag" : "primitive"
-    },
-    "argDefs" : [
-        {
-            "name" : "label",
-            "argType" : {
-                "tag" : "primitive"
-            }
-        }
-    ],
-    "names" : {
-        "relay" : "-relay-",
-        "getDataSrv" : "getDataSrv",
-        "callbackSrv" : "callbackSrv",
-        "responseSrv" : "callbackSrv",
-        "responseFnName" : "response",
-        "errorHandlingSrv" : "errorHandlingSrv",
-        "errorFnName" : "error"
-    }
-},
-        script
-    )
-}
-
- 
-
-export function getMembers(
-    peerId: string,
-    label: string,
-    config?: {ttl?: number}
-): Promise<string[]>;
-
-export function getMembers(
-    peer: FluencePeer,
-    peerId: string,
-    label: string,
-    config?: {ttl?: number}
-): Promise<string[]>;
-
-export function getMembers(...args: any) {
-
-    let script = `
-                    (xor
-                     (seq
-                      (seq
-                       (seq
-                        (seq
-                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                         (call %init_peer_id% ("getDataSrv" "peerId") [] peerId)
-                        )
-                        (call %init_peer_id% ("getDataSrv" "label") [] label)
-                       )
-                       (call %init_peer_id% ("op" "array") ["1" "2" "3" "4"] res)
-                      )
-                      (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [res])
+                       (call %init_peer_id% ("callbackSrv" "response") ["route id"])
                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                       )
                      )
@@ -227,19 +148,19 @@ export function getMembers(...args: any) {
     return callFunction(
         args,
         {
-    "functionName" : "getMembers",
+    "functionName" : "createRoute",
     "returnType" : {
         "tag" : "primitive"
     },
     "argDefs" : [
         {
-            "name" : "peerId",
+            "name" : "label",
             "argType" : {
                 "tag" : "primitive"
             }
         },
         {
-            "name" : "label",
+            "name" : "value",
             "argType" : {
                 "tag" : "primitive"
             }

@@ -1,9 +1,9 @@
 import './index.css';
 
-import { Fluence } from '@fluencelabs/fluence';
+import { CallParams, Fluence } from '@fluencelabs/fluence';
 import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import QRCode from 'qrcode';
-import { createRoom, joinRoom, getMembers } from './_aqua/export';
+import { createRoute, notifySelfDiscovered, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
 
 const interval = 3000;
 
@@ -47,26 +47,46 @@ async function createQrCode(targetId: string, link: string, opts: QRCode.QRCodeR
     await QRCode.toCanvas(el, link, opts);
 }
 
-let roomPeerId: string;
+let selfDiscoveryRouteId: string;
+
+interface DiscoveredUser {
+    route: string;
+    userName: string;
+}
+class DiscoveryService implements DiscoveryServiceDef {
+    private _discoveredUsers: DiscoveredUser[] = [];
+
+    notify_discovered(user: DiscoveredUser): DiscoveredUser[] {
+        if (this._discoveredUsers.some((x) => x.route !== user.route)) {
+            this._discoveredUsers.push(user);
+        }
+
+        return this._discoveredUsers;
+    }
+
+    setInitialList(userList: DiscoveredUser[]) {
+        this._discoveredUsers = userList;
+    }
+}
+
+const discoveryServiceInstance = new DiscoveryService();
 
 async function main() {
     await Fluence.start({
         connectTo: krasnodar[4],
     });
 
+    registerDiscoveryService(discoveryServiceInstance);
+
     const selfPeerId = Fluence.getStatus().peerId!;
     setText('peerid', selfPeerId);
 
     const params = new URLSearchParams(window.location.search);
     const joinParam = params.get('join');
-    if (joinParam) {
-        roomPeerId = joinParam;
-        hide('start');
-        show('join');
-    } else {
-        roomPeerId = selfPeerId;
-        hide('join');
-    }
+
+    const myName = getValue('name');
+    let res = await createRoute(label, myName);
+    // res = await
 
     hide('loading');
     show('app');
@@ -74,10 +94,12 @@ async function main() {
 
 onClick('start', async () => {
     const myName = getValue('name');
-    let res = await createRoom(label);
-    res = await joinRoom(roomPeerId, label);
-    // if(res is not fine)
-    //    throw
+    let res = await createRoute(label, myName);
+    const knownUsers = await notifySelfDiscovered({
+        userName: myName,
+        route: selfDiscoveryRouteId,
+    });
+    discoveryServiceInstance.setInitialList(knownUsers);
 
     const link = window.location.origin + '?join=' + roomPeerId;
     setText('join-link', link);
