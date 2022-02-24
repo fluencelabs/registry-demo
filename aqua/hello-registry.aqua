@@ -1,4 +1,4 @@
-module HelloRegistry declares createMyRoute, notifySelfDiscovered, DiscoveryService
+module HelloRegistry declares createMyRoute, DiscoveryService
 
 import "@fluencelabs/registry/routing.aqua"
 import "@fluencelabs/aqua-lib/builtin.aqua"
@@ -11,21 +11,21 @@ data DiscoveredUser:
     userName: string
 
 service DiscoveryService("discoveryService"):
-    notify_discovered(discoveredUser: DiscoveredUser) -> []DiscoveredUser
+    notify_discovered(route_id: string, userName: string) -> []DiscoveredUser
 
-func createMyRoute(label: string, value: string) -> string:
+func createMyRoute(label: string, userName: string) -> string:
     relay: ?string
     relay <<- HOST_PEER_ID
-    -- res <- createRouteAndJoin(label, value, HOST_PEER_ID, null);
-    res <- createRouteAndRegister(label, value, relay, nil)
+    res <- createRouteAndRegister(label, userName, relay, nil)
     <- res
 
---func notifySelfDiscovered(self: DiscoveredUser) -> []DiscoveredUser:
-    -- read the record
-    -- go to the peer in the record
-    -- notify (with try catch)
-    -- return with the result
---    <- ???
+func discoverAndNotify(join_route_id: string, label: string, userName: string) -> string, []DiscoveredUser:
+    relay: ?string
+    relay <<- HOST_PEER_ID
+    our_route_id <- createRouteAndRegister(label, userName, relay, nil)
 
-func notifySelfDiscovered(self: DiscoveredUser) -> string:
-    <- "ok"
+    recs <- resolveRoute(join_route_id, 4)
+    try:
+        on recs[0].peer_id via recs[0].relay_id:
+            peers <- DiscoveryService.notify_discovered(our_route_id, userName)
+    <- our_route_id, peers

@@ -5,7 +5,7 @@ import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import avmRunner from './avmRunner';
 import { createQrCode, disable, getValue, hide, onClick, setText, show } from './util';
 
-import { createMyRoute, notifySelfDiscovered, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
+import { createMyRoute, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
 
 const label = 'registry-demo';
 

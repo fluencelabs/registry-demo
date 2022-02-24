@@ -17,7 +17,7 @@ import {
 // Services
 
 export interface DiscoveryServiceDef {
-    notify_discovered: (discoveredUser: { route: string; userName: string; }, callParams: CallParams<'discoveredUser'>) => { route: string; userName: string; }[] | Promise<{ route: string; userName: string; }[]>;
+    notify_discovered: (route_id: string, userName: string, callParams: CallParams<'route_id' | 'userName'>) => { route: string; userName: string; }[] | Promise<{ route: string; userName: string; }[]>;
 }
 export function registerDiscoveryService(service: DiscoveryServiceDef): void;
 export function registerDiscoveryService(serviceId: string, service: DiscoveryServiceDef): void;
@@ -35,7 +35,13 @@ export function registerDiscoveryService(...args: any) {
             "functionName" : "notify_discovered",
             "argDefs" : [
                 {
-                    "name" : "discoveredUser",
+                    "name" : "route_id",
+                    "argType" : {
+                        "tag" : "primitive"
+                    }
+                },
+                {
+                    "name" : "userName",
                     "argType" : {
                         "tag" : "primitive"
                     }
@@ -51,77 +57,18 @@ export function registerDiscoveryService(...args: any) {
 }
       
 // Functions
-export type NotifySelfDiscoveredArgSelf = { route: string; userName: string; } 
-
-export function notifySelfDiscovered(
-    self: NotifySelfDiscoveredArgSelf,
-    config?: {ttl?: number}
-): Promise<string>;
-
-export function notifySelfDiscovered(
-    peer: FluencePeer,
-    self: NotifySelfDiscoveredArgSelf,
-    config?: {ttl?: number}
-): Promise<string>;
-
-export function notifySelfDiscovered(...args: any) {
-
-    let script = `
-                    (xor
-                     (seq
-                      (seq
-                       (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                       (call %init_peer_id% ("getDataSrv" "self") [] self)
-                      )
-                      (xor
-                       (call %init_peer_id% ("callbackSrv" "response") ["ok"])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                      )
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
-                    )
-    `
-    return callFunction(
-        args,
-        {
-    "functionName" : "notifySelfDiscovered",
-    "returnType" : {
-        "tag" : "primitive"
-    },
-    "argDefs" : [
-        {
-            "name" : "self",
-            "argType" : {
-                "tag" : "primitive"
-            }
-        }
-    ],
-    "names" : {
-        "relay" : "-relay-",
-        "getDataSrv" : "getDataSrv",
-        "callbackSrv" : "callbackSrv",
-        "responseSrv" : "callbackSrv",
-        "responseFnName" : "response",
-        "errorHandlingSrv" : "errorHandlingSrv",
-        "errorFnName" : "error"
-    }
-},
-        script
-    )
-}
-
  
 
 export function createMyRoute(
     label: string,
-    value: string,
+    userName: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
 export function createMyRoute(
     peer: FluencePeer,
     label: string,
-    value: string,
+    userName: string,
     config?: {ttl?: number}
 ): Promise<string>;
 
@@ -136,7 +83,7 @@ export function createMyRoute(...args: any) {
                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
                          (call %init_peer_id% ("getDataSrv" "label") [] label)
                         )
-                        (call %init_peer_id% ("getDataSrv" "value") [] value)
+                        (call %init_peer_id% ("getDataSrv" "userName") [] userName)
                        )
                        (new $relay
                         (seq
@@ -162,7 +109,7 @@ export function createMyRoute(...args: any) {
                             )
                            )
                            (xor
-                            (call -relay- ("registry" "get_record_bytes") [route_id value $relay [] t []] bytes-0)
+                            (call -relay- ("registry" "get_record_bytes") [route_id userName $relay [] t []] bytes-0)
                             (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                            )
                           )
@@ -193,7 +140,7 @@ export function createMyRoute(...args: any) {
                                   )
                                   (call n ("trust-graph" "get_weight") [%init_peer_id% t-1] weight-0)
                                  )
-                                 (call n ("registry" "put_record") [route_id value $relay [] t [] signature-0.$.signature! weight-0 t-1] result-0)
+                                 (call n ("registry" "put_record") [route_id userName $relay [] t [] signature-0.$.signature! weight-0 t-1] result-0)
                                 )
                                 (null)
                                )
@@ -236,7 +183,7 @@ export function createMyRoute(...args: any) {
             }
         },
         {
-            "name" : "value",
+            "name" : "userName",
             "argType" : {
                 "tag" : "primitive"
             }
