@@ -5,6 +5,6 @@ export default new AvmRunnerBackground({
     baseUrl: 'https://fluence.one/registry-demo/',
     filePaths: {
         avm: 'avm.wasm',
-        marine: 'marine.wasm',
+        marine: 'marine-js.wasm',
     },
 });
