@@ -1,18 +1,15 @@
 import './index.css';
 
-import { CallParams, Fluence } from '@fluencelabs/fluence';
+import { Fluence } from '@fluencelabs/fluence';
 import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import avmRunner from './avmRunner';
-import { createQrCode, getValue, hide, onClick, setText, show } from './util';
+import { createQrCode, disable, getValue, hide, onClick, setText, show } from './util';
 
 import { createRoute, notifySelfDiscovered, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
-
-const interval = 3000;
 
 const label = 'registry-demo';
 
 let selfDiscoveryRouteId: string;
-
 interface DiscoveredUser {
     route: string;
     userName: string;
@@ -21,8 +18,12 @@ class DiscoveryService implements DiscoveryServiceDef {
     private _discoveredUsers: DiscoveredUser[] = [];
 
     notify_discovered(user: DiscoveredUser): DiscoveredUser[] {
-        if (this._discoveredUsers.some((x) => x.route !== user.route)) {
+        if (this._discoveredUsers.every((x) => x.route !== user.route)) {
             this._discoveredUsers.push(user);
+
+            if (this.onUpdated) {
+                this.onUpdated(this._discoveredUsers);
+            }
         }
 
         return this._discoveredUsers;
@@ -30,10 +31,36 @@ class DiscoveryService implements DiscoveryServiceDef {
 
     setInitialList(userList: DiscoveredUser[]) {
         this._discoveredUsers = userList;
+
+        if (this.onUpdated) {
+            this.onUpdated(this._discoveredUsers);
+        }
     }
+
+    onUpdated: ((users: DiscoveredUser[]) => void) | null = null;
 }
 
 const discoveryServiceInstance = new DiscoveryService();
+
+discoveryServiceInstance.onUpdated = async (users) => {
+    const promises = users.map(async (x) => {
+        const html =
+            // force new line
+            `<div>
+                <div>${x.userName}</div>
+                <canvas id="${x.route}" />
+			</div>`;
+        const li = document.createElement('li');
+        li.innerHTML = html;
+        await createQrCode(x.route, link(x.route), {});
+        return li;
+    });
+
+    const lis = await Promise.all(promises);
+
+    const ul = document.getElementById('user-list')!;
+    ul?.replaceChildren(...lis);
+};
 
 async function main() {
     await Fluence.start({
@@ -58,23 +85,39 @@ async function main() {
 }
 
 onClick('start', async () => {
+    disable('start');
     const myName = getValue('name');
-    let res = await createRoute(label, myName);
-    const knownUsers = await notifySelfDiscovered({
+    const createdRoute = await createRoute(label, myName);
+    selfDiscoveryRouteId = createdRoute;
+    let knownUsers = await notifySelfDiscovered({
         userName: myName,
         route: selfDiscoveryRouteId,
     });
-    // discoveryServiceInstance.setInitialList(knownUsers);
 
-    const link = window.location.origin + '?join=' + selfDiscoveryRouteId;
-    setText('join-link', link);
-    await createQrCode('qrcode', link, { width: 640 });
+    // @ts-ignore
+    knownUsers = [
+        {
+            route: 'test1',
+            userName: 'test1',
+        },
+        {
+            route: 'test2',
+            userName: 'test2',
+        },
+    ];
+    // @ts-ignore
+    discoveryServiceInstance.setInitialList(knownUsers);
+    console.log(knownUsers);
 
-    show('join-link-wrapper');
-    show('room-list-wrapper');
+    setText('join-link', selfDiscoveryRouteId);
+    await createQrCode('qrcode', link(selfDiscoveryRouteId), { width: 640 });
 
-    // setInterval(loadMemberList, interval);
+    show('user-list-wrapper');
 });
+
+function link(id: string): string {
+    return window.location.origin + '?join=' + id;
+}
 
 onClick('join', async () => {
     const myName = getValue('name');
@@ -83,8 +126,6 @@ onClick('join', async () => {
     //    throw
 
     show('room-list-wrapper');
-
-    // setInterval(loadMemberList, interval);
 });
 
 // async function loadMemberList() {

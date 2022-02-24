@@ -37,3 +37,13 @@ export async function createQrCode(targetId: string, link: string, opts: QRCode.
     const el = document.getElementById(targetId)!;
     await QRCode.toCanvas(el, link, opts);
 }
+
+export function disable(id: string) {
+    const el = document.getElementById(id)!;
+    el.setAttribute('disabled', 'true');
+}
+
+export function enable(id: string) {
+    const el = document.getElementById(id)!;
+    el.removeAttribute('disabled');
+}
