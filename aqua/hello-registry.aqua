@@ -14,8 +14,11 @@ service DiscoveryService("discoveryService"):
     notify_discovered(discoveredUser: DiscoveredUser) -> []DiscoveredUser
 
 func createMyRoute(label: string, value: string) -> string:
+    relay: ?string
+    relay <<- HOST_PEER_ID
     -- res <- createRouteAndJoin(label, value, HOST_PEER_ID, null);
-    <- "route id"
+    res <- createRouteAndRegister(label, value, relay, nil)
+    <- res
 
 --func notifySelfDiscovered(self: DiscoveredUser) -> []DiscoveredUser:
     -- read the record

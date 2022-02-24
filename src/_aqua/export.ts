@@ -132,17 +132,93 @@ export function createMyRoute(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "label") [] label)
+                        (seq
+                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                         (call %init_peer_id% ("getDataSrv" "label") [] label)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "value") [] value)
                        )
-                       (call %init_peer_id% ("getDataSrv" "value") [] value)
+                       (new $relay
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (seq
+                              (seq
+                               (ap -relay- $relay)
+                               (call %init_peer_id% ("peer" "timestamp_sec") [] t)
+                              )
+                              (xor
+                               (call -relay- ("registry" "get_key_bytes") [label [] t [] ""] bytes)
+                               (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                              )
+                             )
+                             (call %init_peer_id% ("sig" "sign") [bytes] signature)
+                            )
+                            (xor
+                             (call -relay- ("registry" "get_key_id") [label %init_peer_id%] route_id)
+                             (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                            )
+                           )
+                           (xor
+                            (call -relay- ("registry" "get_record_bytes") [route_id value $relay [] t []] bytes-0)
+                            (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                           )
+                          )
+                          (call %init_peer_id% ("sig" "sign") [bytes-0] signature-0)
+                         )
+                         (xor
+                          (seq
+                           (seq
+                            (call -relay- ("op" "string_to_b58") [route_id] k)
+                            (call -relay- ("kad" "neighborhood") [k [] []] nodes)
+                           )
+                           (par
+                            (fold nodes n
+                             (par
+                              (xor
+                               (xor
+                                (seq
+                                 (seq
+                                  (seq
+                                   (seq
+                                    (seq
+                                     (call n ("peer" "timestamp_sec") [] t-0)
+                                     (call n ("trust-graph" "get_weight") [%init_peer_id% t-0] weight)
+                                    )
+                                    (call n ("registry" "register_key") [label [] t [] "" signature.$.signature! false weight t-0] result)
+                                   )
+                                   (call n ("peer" "timestamp_sec") [] t-1)
+                                  )
+                                  (call n ("trust-graph" "get_weight") [%init_peer_id% t-1] weight-0)
+                                 )
+                                 (call n ("registry" "put_record") [route_id value $relay [] t [] signature-0.$.signature! weight-0 t-1] result-0)
+                                )
+                                (null)
+                               )
+                               (seq
+                                (call -relay- ("op" "noop") [])
+                                (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 4])
+                               )
+                              )
+                              (next n)
+                             )
+                            )
+                            (null)
+                           )
+                          )
+                          (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 5])
+                         )
+                        )
+                       )
                       )
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") ["route id"])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("callbackSrv" "response") [route_id])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 6])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 7])
                     )
     `
     return callFunction(

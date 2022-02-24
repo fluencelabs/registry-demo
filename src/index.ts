@@ -5,7 +5,7 @@ import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import avmRunner from './avmRunner';
 import { createQrCode, disable, getValue, hide, onClick, setText, show } from './util';
 
-import { createRoute, notifySelfDiscovered, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
+import { createMyRoute, notifySelfDiscovered, registerDiscoveryService, DiscoveryServiceDef } from './_aqua/export';
 
 const label = 'registry-demo';
 
@@ -80,7 +80,7 @@ async function main() {
     const joinParam = params.get('join');
 
     const myName = getValue('name');
-    let res = await createRoute(label, myName);
+    let res = await createMyRoute(label, myName);
     // res = await
 
     hide('loading');
@@ -90,7 +90,7 @@ async function main() {
 onClick('start', async () => {
     disable('start');
     const myName = getValue('name');
-    const createdRoute = await createRoute(label, myName);
+    const createdRoute = await createMyRoute(label, myName);
     selfDiscoveryRouteId = createdRoute;
     let knownUsers = await notifySelfDiscovered({
         userName: myName,
