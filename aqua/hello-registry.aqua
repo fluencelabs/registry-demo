@@ -17,6 +17,7 @@ func createMyRoute(label: string, userName: string) -> string:
     relay: ?string
     relay <<- HOST_PEER_ID
     res <- createRouteAndRegister(label, userName, relay, nil)
+    DiscoveryService.notify_discovered(res, userName)
     <- res
 
 func discoverAndNotify(join_route_id: string, label: string, userName: string) -> string, []DiscoveredUser:
