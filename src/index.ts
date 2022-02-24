@@ -99,38 +99,38 @@ onClick('start', async () => {
         userName: myName,
         route: selfDiscoveryRouteId,
     });
-    discoveryServiceInstance.setInitialList(knownUsers);
+    // discoveryServiceInstance.setInitialList(knownUsers);
 
-    const link = window.location.origin + '?join=' + roomPeerId;
+    const link = window.location.origin + '?join=' + selfDiscoveryRouteId;
     setText('join-link', link);
     await createQrCode('qrcode', link, { width: 640 });
 
     show('join-link-wrapper');
     show('room-list-wrapper');
 
-    setInterval(loadMemberList, interval);
+    // setInterval(loadMemberList, interval);
 });
 
 onClick('join', async () => {
     const myName = getValue('name');
-    const res = await joinRoom(roomPeerId, label);
+    // const res = await joinRoom(roomPeerId, label);
     // if(res is not fine)
     //    throw
 
     show('room-list-wrapper');
 
-    setInterval(loadMemberList, interval);
+    // setInterval(loadMemberList, interval);
 });
 
-async function loadMemberList() {
-    const members = await getMembers(roomPeerId, label);
-    const liElems = members.map((x) => {
-        const el = document.createElement('li');
-        el.textContent = x;
-        return el;
-    });
-    const roomElem = document.getElementById('room-list');
-    roomElem?.replaceChildren(...liElems);
-}
+// async function loadMemberList() {
+//     const members = await getMembers(roomPeerId, label);
+//     const liElems = members.map((x) => {
+//         const el = document.createElement('li');
+//         el.textContent = x;
+//         return el;
+//     });
+//     const roomElem = document.getElementById('room-list');
+//     roomElem?.replaceChildren(...liElems);
+// }
 
 main();
