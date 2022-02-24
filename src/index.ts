@@ -47,28 +47,7 @@ class DiscoveryService implements DiscoveryServiceDef {
 
 const discoveryServiceInstance = new DiscoveryService();
 
-discoveryServiceInstance.onUpdated = async (users) => {
-    const promises = users.map(async (x) => {
-        const html =
-            // force new line
-            `<div class="user">
-                <div class="user__name">${x.userName}</div>
-                <canvas class="user__canvas" id="${x.route}" />
-			</div>`;
-        const li = document.createElement('li');
-        li.innerHTML = html;
-        return li;
-    });
-
-    const lis = await Promise.all(promises);
-
-    const ul = document.getElementById('user-list')!;
-    ul?.replaceChildren(...lis);
-
-    for (let x of users) {
-        createQrCode(x.route, link(x.route), {});
-    }
-};
+discoveryServiceInstance.onUpdated = updateUserList;
 
 async function main() {
     await Fluence.start({
@@ -106,7 +85,7 @@ onClick('go', async () => {
     // @ts-ignore
     discoveryServiceInstance.setInitialList(knownUsers);
 
-    setText('join-link', selfDiscoveryRouteId);
+    setText('join-link', link(selfDiscoveryRouteId));
     await createQrCode('qrcode', link(selfDiscoveryRouteId), { width: 640 });
 
     show('user-list-wrapper');
@@ -115,3 +94,28 @@ onClick('go', async () => {
 function link(id: string): string {
     return window.location.origin + '?join=' + id;
 }
+
+async function updateUserList(users) {
+    const promises = users.map(async (x) => {
+        const html =
+            // force new line
+            `<div class="user">
+                <div class="user__name">${x.userName}</div>
+                <canvas class="user__canvas" id="${x.route}" />
+			</div>`;
+        const li = document.createElement('li');
+        li.innerHTML = html;
+        return li;
+    });
+
+    const lis = await Promise.all(promises);
+
+    const ul = document.getElementById('user-list')!;
+    ul?.replaceChildren(...lis);
+
+    for (let x of users) {
+        createQrCode(x.route, link(x.route), {});
+    }
+}
+
+main();
