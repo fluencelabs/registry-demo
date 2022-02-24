@@ -1,0 +1,3 @@
+module Export
+import createMyRoute, DiscoveryService, discoverAndNotify from "hello-registry.aqua"
+export createMyRoute, DiscoveryService, discoverAndNotify
