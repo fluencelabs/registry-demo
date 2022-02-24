@@ -52,7 +52,6 @@ discoveryServiceInstance.onUpdated = async (users) => {
 			</div>`;
         const li = document.createElement('li');
         li.innerHTML = html;
-        await createQrCode(x.route, link(x.route), {});
         return li;
     });
 
@@ -60,6 +59,10 @@ discoveryServiceInstance.onUpdated = async (users) => {
 
     const ul = document.getElementById('user-list')!;
     ul?.replaceChildren(...lis);
+
+    for (let x of users) {
+        createQrCode(x.route, link(x.route), {});
+    }
 };
 
 async function main() {
@@ -107,7 +110,6 @@ onClick('start', async () => {
     ];
     // @ts-ignore
     discoveryServiceInstance.setInitialList(knownUsers);
-    console.log(knownUsers);
 
     setText('join-link', selfDiscoveryRouteId);
     await createQrCode('qrcode', link(selfDiscoveryRouteId), { width: 640 });
